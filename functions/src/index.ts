@@ -2,6 +2,7 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import * as express from "express";
 import * as bodyParser from "body-parser";
+import * as seedrandom from "seedrandom";
 
 admin.initializeApp(functions.config().firebase);
 const db = admin.firestore();
@@ -73,9 +74,8 @@ app.get("/daily-quote", async (request, response) => {
     const seed = `${yyyy}${mm}${dd}`;
 
     const quoteIds = quoteIdsRef.data()?.docs || [];
-    //@ts-ignore
-    const random = new Math.seedrandom(seed);
-    const randomIndex = random() * quoteIds.length;
+    const random = seedrandom(seed);
+    const randomIndex = Math.floor(random() * quoteIds.length);
 
     const quote = await db
       .collection("quotes")
@@ -89,7 +89,6 @@ app.get("/daily-quote", async (request, response) => {
     response.json({
       id: quote.id,
       data: quote.data(),
-      randomIndex,
     });
   } catch (error) {
     response.status(500).send(error);
